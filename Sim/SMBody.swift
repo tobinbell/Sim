@@ -16,5 +16,4 @@ struct SMBody {
     var center: SMPoint
     var velocity: SMVector
     var mass: SMScalar
-    
 }

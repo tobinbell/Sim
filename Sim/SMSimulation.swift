@@ -16,11 +16,13 @@ class SMSimulation: NSView {
     override init(frame: NSRect) {
         super.init(frame: frame)
         setupMouseInteraction()
+        updateZoom(to: self.camera.zoom)
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupMouseInteraction()
+        updateZoom(to: self.camera.zoom)
     }
     
     // MARK: Configuration
@@ -28,7 +30,7 @@ class SMSimulation: NSView {
     // Colors of various UI elements.
     private let backgroundColor = NSColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1)
     private let originColor = NSColor(red: 0.9, green: 0, blue: 0, alpha: 1)
-    private let axisColor = NSColor(red: 0.8, green: 0.8, blue: 0.8, alpha: 1)
+    private let axisColor = NSColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1)
     private let gridColor = NSColor(red: 0.25, green: 0.25, blue: 0.25, alpha: 1)
     private let crossHairColor = NSColor(red: 0.2, green: 0.8, blue: 0.2, alpha: 1)
     
@@ -78,21 +80,59 @@ class SMSimulation: NSView {
     }
     
     func zoomInPressed(sender: NSSegmentedControl, segment: Int) {
-        self.camera.zoom *= 1.25
-        self.needsDisplay = true
+        updateZoom(to: self.camera.zoom * 1.25)
     }
     
     func zoomOutPressed(sender: NSSegmentedControl, segment: Int) {
-        self.camera.zoom /= 1.25
-        self.needsDisplay = true
+        updateZoom(to: self.camera.zoom / 1.25)
     }
     
     func zoomToFitPressed(sender: NSSegmentedControl, segment: Int) {
-        self.camera.zoom = 1
-        self.needsDisplay = true
+        updateZoom(to: 1)
     }
     
     // MARK: Drawing
+    
+    // Cache the grid spacing, so we don't need to calculate it every time.
+    private var gridSpacing: SMScalar = 0
+    
+    // Update the camera's zoom, and recalculate any relevant data.
+    private func updateZoom(to zoom: SMScalar) {
+        
+        // Utility function.
+        // Find the best grid spacing to use, assuming it must fit a given simulation-space length.
+        // In practice, this will be some quantity determined by the current zoom level.
+        func findGridSpacing(greaterThan length: SMScalar) -> SMScalar {
+            let log = log10(length)
+            let magnitude = floor(log)
+            var step = log - magnitude
+            
+            // Bring the step of the log up to the nearest 2, 5, or 10.
+            // Example:
+            //     17 -> 20
+            //     213 -> 500
+            //     0.7 -> 1
+            //     6000 -> 10000
+            switch step {
+            case log10(1) ..< log10(2):
+                step = log10(2)
+            case log10(2) ..< log10(5):
+                step = log10(5)
+            default:
+                step = 1
+            }
+            
+            return pow(10, magnitude + step)
+        }
+        
+        self.camera.zoom = zoom
+        
+        // Calculate grid geometry.
+        // Grid lines should never be closer than 60 points apart.
+        self.gridSpacing = findGridSpacing(greaterThan: simulationLength(from: 60))
+        
+        self.needsDisplay = true
+    }
     
     // Convert a physical distance in the simulation (as an SMScalar) to a
     // length on the screen (as a CGFloat) based on the value of the camera's zoom.
@@ -185,35 +225,7 @@ class SMSimulation: NSView {
     // The origin is represented by a red circle.
     private func drawCoordinates() {
         
-        // Utility function.
-        // Find the best grid spacing to use, assuming it must fit a given simulation-space length.
-        // In practice, this will be some quantity determined by the current zoom level.
-        func findGridSpacing(greaterThan length: SMScalar) -> SMScalar {
-            let log = log10(length)
-            let magnitude = floor(log)
-            var step = log - magnitude
-            
-            // Bring the step of the log up to the nearest 2, 5, or 10.
-            // Example:
-            //     17 -> 20
-            //     213 -> 500
-            //     0.7 -> 1
-            //     6000 -> 10000
-            switch step {
-                case log10(1) ..< log10(2):
-                    step = log10(2)
-                case log10(2) ..< log10(5):
-                    step = log10(5)
-                default:
-                    step = 1
-            }
-            
-            return pow(10, magnitude + step)
-        }
         
-        // Calculate grid geometry.
-        // Grid lines should never be closer than 100 points apart.
-        let gridSpacing = findGridSpacing(greaterThan: simulationLength(from: 100))
         
         gridColor.setStroke()
         
@@ -223,7 +235,7 @@ class SMSimulation: NSView {
         while true {
             
             // Draw gridlines and move over until we run off the side of the screen.
-            gridX += gridSpacing
+            gridX = (round(gridX / gridSpacing) + 1) * gridSpacing
             let gridXScreen = graphicsX(from: gridX)
             if gridXScreen > self.bounds.maxX { break }
             
@@ -235,12 +247,12 @@ class SMSimulation: NSView {
         }
         
         // Horizontal gridlines.
-        let bottomY = self.camera.center.y - SMScalar(self.bounds.midY) / self.camera.zoom
+        let bottomY = simulationY(from: self.bounds.minY)
         var gridY = floor(bottomY / gridSpacing) * gridSpacing
         while true {
             
             // Draw gridlines and move up until we run off the top of the screen.
-            gridY += gridSpacing
+            gridY = (round(gridY / gridSpacing) + 1) * gridSpacing
             let gridYScreen = graphicsY(from: gridY)
             if gridYScreen > self.bounds.maxY { break }
             
@@ -291,30 +303,51 @@ class SMSimulation: NSView {
         }
         
         // Lastly, we will draw the coordinate value labels, using the axis color to do so.
-        axisColor.setStroke()
         
         // Vertical gridline labels.
         gridX = floor(leftX / gridSpacing) * gridSpacing
         while true {
+            
+            // Don't display the coordinate 0.
+            if gridX == 0 {
+                gridX = gridSpacing
+                continue
+            }
+            
             let gridXScreen = graphicsX(from: gridX)
             if gridXScreen > self.bounds.maxX { break }
             
             let label = displayableString(for: gridX) as NSString
-            let labelPoint = CGPoint(x: gridXScreen + 8, y: self.bounds.minY + 4)
-            label.drawAtPoint(labelPoint, withAttributes: [NSForegroundColorAttributeName: axisColor])
-            gridX += gridSpacing
+            let labelSize = label.sizeWithAttributes([:])
+            let range = self.bounds.minY ... self.bounds.maxY - labelSize.height - 2
+            let labelOrigin = CGPoint(x: gridXScreen + 6,
+                                      y: range.clip(graphicsY(from: 0)) + 4)
+            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
+            
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: axisColor])
+            gridX = (round(gridX / gridSpacing) + 1) * gridSpacing
         }
         
         // Horizontal gridline labels.
         gridY = floor(bottomY / gridSpacing) * gridSpacing
         while true {
+            
+            // Don't display the coordinate 0.
+            if gridY == 0 {
+                gridY = gridSpacing
+                continue
+            }
+            
             let gridYScreen = graphicsY(from: gridY)
             if gridYScreen > self.bounds.maxY { break }
             
-            let label = displayableString(for: gridY) as NSString
-            let labelPoint = CGPoint(x: self.bounds.minX + 6, y: gridYScreen + 4)
-            label.drawAtPoint(labelPoint, withAttributes: [NSForegroundColorAttributeName: axisColor])
-            gridY += gridSpacing
+            let label = displayableString(for: round(gridY / self.gridSpacing) * self.gridSpacing) as NSString
+            let labelSize = label.sizeWithAttributes([:])
+            let range = self.bounds.minX ... self.bounds.maxX - labelSize.width - 11
+            let labelOrigin = CGPoint(x: range.clip(graphicsX(from: 0)) + 6, y: gridYScreen + 1)
+            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
+            label.drawInRect(labelRect, withAttributes: [NSForegroundColorAttributeName: axisColor])
+            gridY = (round(gridY / gridSpacing) + 1) * gridSpacing
         }
     }
     

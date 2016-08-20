@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		026CC1AD1D68B73700561D99 /* IntervalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 026CC1AC1D68B73700561D99 /* IntervalType.swift */; };
 		0271EED91D6692A50026523C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EED81D6692A50026523C /* AppDelegate.swift */; };
 		0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEDA1D6692A50026523C /* SMSimulationController.swift */; };
 		0271EEDD1D6692A50026523C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0271EEDC1D6692A50026523C /* Assets.xcassets */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		026CC1AC1D68B73700561D99 /* IntervalType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntervalType.swift; sourceTree = "<group>"; };
 		0271EED51D6692A50026523C /* Sim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0271EED81D6692A50026523C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0271EEDA1D6692A50026523C /* SMSimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMSimulationController.swift; sourceTree = "<group>"; };
@@ -47,6 +49,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		026CC1AB1D68B6D900561D99 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				026CC1AC1D68B73700561D99 /* IntervalType.swift */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
 		0271EECC1D6692A40026523C = {
 			isa = PBXGroup;
 			children = (
@@ -66,12 +76,12 @@
 		0271EED71D6692A50026523C /* Sim */ = {
 			isa = PBXGroup;
 			children = (
+				026CC1AB1D68B6D900561D99 /* Extensions */,
 				0271EED81D6692A50026523C /* AppDelegate.swift */,
 				0285785A1D67D1AA009B70E1 /* SMWindowController.swift */,
 				0271EEDA1D6692A50026523C /* SMSimulationController.swift */,
 				0271EEE71D6692C80026523C /* SMSimulation.swift */,
-				0271EEF61D669C880026523C /* SMCamera.swift */,
-				0271EEE91D6694270026523C /* SMBody.swift */,
+				02FB7FDA1D68759F001D2F80 /* Models */,
 				0271EEEF1D66952B0026523C /* Geometry */,
 				0271EEDC1D6692A50026523C /* Assets.xcassets */,
 				0271EEDE1D6692A50026523C /* Main.storyboard */,
@@ -88,6 +98,15 @@
 				0271EEED1D6695200026523C /* SMScalar.swift */,
 			);
 			name = Geometry;
+			sourceTree = "<group>";
+		};
+		02FB7FDA1D68759F001D2F80 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0271EEF61D669C880026523C /* SMCamera.swift */,
+				0271EEE91D6694270026523C /* SMBody.swift */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,6 +179,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				026CC1AD1D68B73700561D99 /* IntervalType.swift in Sources */,
 				0271EEF11D66953C0026523C /* SMVector.swift in Sources */,
 				0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */,
 				0271EEF71D669C880026523C /* SMCamera.swift in Sources */,
