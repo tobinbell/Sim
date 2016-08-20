@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0271EED91D6692A50026523C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EED81D6692A50026523C /* AppDelegate.swift */; };
-		0271EEDB1D6692A50026523C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEDA1D6692A50026523C /* ViewController.swift */; };
+		0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEDA1D6692A50026523C /* SMSimulationController.swift */; };
 		0271EEDD1D6692A50026523C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0271EEDC1D6692A50026523C /* Assets.xcassets */; };
 		0271EEE01D6692A50026523C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0271EEDE1D6692A50026523C /* Main.storyboard */; };
 		0271EEE81D6692C80026523C /* SMSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEE71D6692C80026523C /* SMSimulation.swift */; };
@@ -17,12 +17,13 @@
 		0271EEEE1D6695200026523C /* SMScalar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEED1D6695200026523C /* SMScalar.swift */; };
 		0271EEF11D66953C0026523C /* SMVector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEF01D66953C0026523C /* SMVector.swift */; };
 		0271EEF71D669C880026523C /* SMCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEF61D669C880026523C /* SMCamera.swift */; };
+		0285785B1D67D1AA009B70E1 /* SMWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0285785A1D67D1AA009B70E1 /* SMWindowController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0271EED51D6692A50026523C /* Sim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0271EED81D6692A50026523C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		0271EEDA1D6692A50026523C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		0271EEDA1D6692A50026523C /* SMSimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMSimulationController.swift; sourceTree = "<group>"; };
 		0271EEDC1D6692A50026523C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0271EEDF1D6692A50026523C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0271EEE11D6692A50026523C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -32,6 +33,7 @@
 		0271EEED1D6695200026523C /* SMScalar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMScalar.swift; sourceTree = "<group>"; };
 		0271EEF01D66953C0026523C /* SMVector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMVector.swift; sourceTree = "<group>"; };
 		0271EEF61D669C880026523C /* SMCamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMCamera.swift; sourceTree = "<group>"; };
+		0285785A1D67D1AA009B70E1 /* SMWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,11 +67,13 @@
 			isa = PBXGroup;
 			children = (
 				0271EED81D6692A50026523C /* AppDelegate.swift */,
-				0271EEDA1D6692A50026523C /* ViewController.swift */,
+				0285785A1D67D1AA009B70E1 /* SMWindowController.swift */,
+				0271EEDA1D6692A50026523C /* SMSimulationController.swift */,
 				0271EEE71D6692C80026523C /* SMSimulation.swift */,
 				0271EEF61D669C880026523C /* SMCamera.swift */,
 				0271EEE91D6694270026523C /* SMBody.swift */,
 				0271EEEF1D66952B0026523C /* Geometry */,
+				0271EEDC1D6692A50026523C /* Assets.xcassets */,
 				0271EEDE1D6692A50026523C /* Main.storyboard */,
 				0271EEE11D6692A50026523C /* Info.plist */,
 			);
@@ -82,7 +86,6 @@
 				0271EEEB1D6694C10026523C /* SMPoint.swift */,
 				0271EEF01D66953C0026523C /* SMVector.swift */,
 				0271EEED1D6695200026523C /* SMScalar.swift */,
-				0271EEDC1D6692A50026523C /* Assets.xcassets */,
 			);
 			name = Geometry;
 			sourceTree = "<group>";
@@ -158,9 +161,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				0271EEF11D66953C0026523C /* SMVector.swift in Sources */,
-				0271EEDB1D6692A50026523C /* ViewController.swift in Sources */,
+				0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */,
 				0271EEF71D669C880026523C /* SMCamera.swift in Sources */,
 				0271EED91D6692A50026523C /* AppDelegate.swift in Sources */,
+				0285785B1D67D1AA009B70E1 /* SMWindowController.swift in Sources */,
 				0271EEE81D6692C80026523C /* SMSimulation.swift in Sources */,
 				0271EEEE1D6695200026523C /* SMScalar.swift in Sources */,
 				0271EEEC1D6694C10026523C /* SMPoint.swift in Sources */,
@@ -307,6 +311,7 @@
 				0271EEE61D6692A50026523C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
