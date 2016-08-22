@@ -8,7 +8,20 @@
 
 import Cocoa
 
-class SMSimulationController: NSViewController {
+class SMSimulationController: NSViewController, SMSimulationDelegate {
+    
+    // The simulation model.
+    let simulation = SMSimulation()
+    var simulationView: SMSimulationView!
+    
+    override func viewDidLoad() {
+        simulationView = view as? SMSimulationView
+        simulation.delegate = self
+    }
+    
+    func updatedBodies(for simulation: SMSimulation) {
+        simulationView.needsDisplay = true
+    }
     
     override func viewDidAppear() {
         super.viewDidAppear()

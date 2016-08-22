@@ -10,21 +10,6 @@ import Cocoa
 
 class SMSimulationView: NSView {
     
-    private var bodies = [SMBody]()
-    private var camera = SMCamera(zoom: 5)
-    
-    override init(frame: NSRect) {
-        super.init(frame: frame)
-        setupMouseInteraction()
-        updateZoom(to: self.camera.zoom)
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupMouseInteraction()
-        updateZoom(to: self.camera.zoom)
-    }
-    
     // MARK: Configuration
     
     // Colors of various UI elements.
@@ -40,11 +25,49 @@ class SMSimulationView: NSView {
     private let gridLineWidth: CGFloat = 1
     private let crossHairLineWidth: CGFloat = 1
     
+    // The simulation to be rendered.
+    var simulation = SMSimulation()
+    
+    // A camera object, representing the view point to display.
+    var camera = SMCamera() {
+        didSet {
+            // Whenever the viewpoint has changed, redraw.
+            self.needsDisplay = true
+        }
+    }
+    
+    // Initializers. Due to Cocoa's setup, these two initializers are required
+    // to ensure that all custom setup code runs when the view is created.
+    // Both initializers simply call the custom setup() method.
+    
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+    
+    // MARK: Setup
+    
+    // Perform all setup required for the view.
+    // This mostly passes off the setup work to more specialized methods.
+    private func setup() {
+        updateGridSpacing()
+        setupMouseInteraction()
+    }
+    
     // MARK: Mouse Interaction
     
-    private var mouseLocation: CGPoint?
-    private var mouseTracker: NSTrackingArea!
-        
+    private var mouseLocation: CGPoint? {
+        didSet {
+            // Whenever the mouse position changes, redraw.
+            self.needsDisplay = true
+        }
+    }
+    
     private func setupMouseInteraction() {
         
         // Create the tracking area to handle mouse moved events.
@@ -52,87 +75,33 @@ class SMSimulationView: NSView {
         //
         // Note: we specify the .InVisibleRect option because the self.bounds is
         // not yet correctly defined when this method runs.
-        mouseTracker = NSTrackingArea(rect: self.bounds,
-                                      options: [.InVisibleRect, .ActiveInActiveApp, .MouseMoved],
-                                      owner: self,
-                                      userInfo: nil)
+        let mouseTracker = NSTrackingArea(rect: self.bounds,
+                                          options: [.InVisibleRect, .ActiveInActiveApp, .MouseMoved],
+                                          owner: self,
+                                          userInfo: nil)
         self.addTrackingArea(mouseTracker)
     }
     
     // Pan the center of the camera in response to the scroll wheel.
     override func scrollWheel(event: NSEvent) {
-        let worldDeltaX = SMScalar(event.scrollingDeltaX) / self.camera.zoom
-        let worldDeltaY = SMScalar(event.scrollingDeltaY) / self.camera.zoom
-        let worldDelta = SMVector(-worldDeltaX, worldDeltaY)
-        self.camera.center.translate(by: worldDelta)
-        self.needsDisplay = true
+        
+        // Convert graphical deltas to simulation-space deltas.
+        let simulationDeltaX = simulationLength(from: event.scrollingDeltaX)
+        let simulationDeltaY = simulationLength(from: event.scrollingDeltaY)
+        let simulationDelta = SMVector(-simulationDeltaX, simulationDeltaY)
+        
+        camera.center += simulationDelta
     }
     
+    // Update the mouse location (and indirectly, the crosshair) when the mouse moves.
+    // This method is only run because of the NSTrackingArea that is created in the
+    // setupMouseInteraction() method above.
     override func mouseMoved(event: NSEvent) {
+        // Convert the click point to our own coordinate system from the window's coordinates.
         mouseLocation = self.convertPoint(event.locationInWindow, fromView: nil)
-        self.needsDisplay = true
     }
     
-    // MARK: Window Actions
-    
-    func toggleSimulationPressed(sender: NSButton) {
-        Swift.print("play")
-    }
-    
-    func zoomInPressed(sender: NSSegmentedControl, segment: Int) {
-        updateZoom(to: self.camera.zoom * 1.25)
-    }
-    
-    func zoomOutPressed(sender: NSSegmentedControl, segment: Int) {
-        updateZoom(to: self.camera.zoom / 1.25)
-    }
-    
-    func zoomToFitPressed(sender: NSSegmentedControl, segment: Int) {
-        updateZoom(to: 1)
-    }
-    
-    // MARK: Drawing
-    
-    // Cache the grid spacing, so we don't need to calculate it every time.
-    private var gridSpacing: SMScalar = 0
-    
-    // Update the camera's zoom, and recalculate any relevant data.
-    private func updateZoom(to zoom: SMScalar) {
-        
-        // Utility function.
-        // Find the best grid spacing to use, assuming it must fit a given simulation-space length.
-        // In practice, this will be some quantity determined by the current zoom level.
-        func findGridSpacing(greaterThan length: SMScalar) -> SMScalar {
-            let log = log10(length)
-            let magnitude = floor(log)
-            var step = log - magnitude
-            
-            // Bring the step of the log up to the nearest 2, 5, or 10.
-            // Example:
-            //     17 -> 20
-            //     213 -> 500
-            //     0.7 -> 1
-            //     6000 -> 10000
-            switch step {
-            case log10(1) ..< log10(2):
-                step = log10(2)
-            case log10(2) ..< log10(5):
-                step = log10(5)
-            default:
-                step = 1
-            }
-            
-            return pow(10, magnitude + step)
-        }
-        
-        self.camera.zoom = zoom
-        
-        // Calculate grid geometry.
-        // Grid lines should never be closer than 60 points apart.
-        self.gridSpacing = findGridSpacing(greaterThan: simulationLength(from: 60))
-        
-        self.needsDisplay = true
-    }
+    // MARK: Coordinate Conversions
     
     // Convert a physical distance in the simulation (as an SMScalar) to a
     // length on the screen (as a CGFloat) based on the value of the camera's zoom.
@@ -166,13 +135,53 @@ class SMSimulationView: NSView {
     }
     
     // Convert a point from simulation space to screen space.
-    func graphicsPoint(from p: SMPoint) -> CGPoint {
+    func graphicsPoint(from p: SMVector) -> CGPoint {
         return CGPoint(x: graphicsX(from: p.x), y: graphicsY(from: p.y))
     }
     
     // Convert a point from simulation space to screen space.
-    func simulationPoint(from p: CGPoint) -> SMPoint {
-        return SMPoint(simulationX(from: p.x), simulationY(from: p.y))
+    func simulationPoint(from p: CGPoint) -> SMVector {
+        return SMVector(simulationX(from: p.x), simulationY(from: p.y))
+    }
+    
+    // MARK: Environmental Drawing
+    
+    // Cache the grid spacing, so we don't need to calculate it every time.
+    private var oldZoom: SMScalar = 0
+    private var gridSpacing: SMScalar = 0
+    
+    // Recalculate the grid spacing.
+    private func updateGridSpacing() {
+        
+        // Do nothing if the zoom has not been changed.
+        if camera.zoom == oldZoom { return }
+        
+        oldZoom = camera.zoom
+        
+        // Find the best grid spacing to use, assuming it must fit a given simulation-space length.
+        // We determine this simulation length based on a fixed graphical length (60 points).
+        
+        let minLength = simulationLength(from: 60)
+        let log = log10(minLength)
+        let magnitude = floor(log)
+        var step = log - magnitude
+        
+        // Bring the step of the log up to the nearest 2, 5, or 10.
+        // Example:
+        //     17 -> 20
+        //     213 -> 500
+        //     0.7 -> 1
+        //     6000 -> 10000
+        switch step {
+        case log10(1) ..< log10(2):
+            step = log10(2)
+        case log10(2) ..< log10(5):
+            step = log10(5)
+        default:
+            step = 1
+        }
+        
+        gridSpacing = pow(10, magnitude + step)
     }
     
     // Convert a coordinate value to a displayable string.
@@ -199,7 +208,7 @@ class SMSimulationView: NSView {
     // Convert a coordinate point to a displayable string.
     // If a coordinate value is sufficiently normal, display it in decimal.
     // Otherwise, use short scientific notation.
-    func displayableString(for point: SMPoint) -> String {
+    func displayableString(for point: SMVector) -> String {
         return "\(displayableString(for: point.x)), \(displayableString(for: point.y))"
     }
     
@@ -221,11 +230,54 @@ class SMSimulationView: NSView {
         NSRectFill(self.bounds)
     }
     
+    // Label a graphics-space point with a given string.
+    private func drawLabel(text: String, at point: CGPoint, using color: NSColor = .whiteColor()) {
+        
+        let label = text as NSString
+        let size = label.sizeWithAttributes([:])
+        
+        let x = point.x + 8
+        let y = point.y + 6
+        
+        let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+    }
+    
+    // Label a simulation-space point with a given string.
+    private func drawLabel(text: String, at point: SMVector, using color: NSColor = .whiteColor()) {
+        drawLabel(text, at: graphicsPoint(from: point), using: color)
+    }
+    
+    // Annotate a graphics-space point with a text-based annotation.
+    // Similar to drawLabel() above, but this method will shift the annotation
+    // around the given point when the point gets near an edge.
+    private func drawAnnotation(text: String, at point: CGPoint, using color: NSColor = .whiteColor()) {
+        let label = text as NSString
+        let size = label.sizeWithAttributes([:])
+        
+        var x = point.x + 8
+        var y = point.y + 6
+        
+        // Move the label over if it is too close to either edge (right or top).
+        if x + size.width > bounds.maxX {
+            x = point.x - size.width - 8
+        }
+        if y + size.height > bounds.maxY {
+            y = point.y - size.height
+        }
+        
+        let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+    }
+    
+    // Annotate a simulation-space point with a text-based annotation.
+    private func drawAnnotation(text: String, at point: SMVector, using color: NSColor = .whiteColor()) {
+        drawAnnotation(text, at: graphicsPoint(from: point), using: color)
+    }
+    
     // Draws the basic coordinate space graphics.
     // The origin is represented by a red circle.
     private func drawCoordinates() {
-        
-        
         
         gridColor.setStroke()
         
@@ -288,7 +340,7 @@ class SMSimulationView: NSView {
         }
         
         // Calculate origin geometry.
-        let origin = SMPoint()
+        let origin = SMVector()
         let originPoint = graphicsPoint(from: origin)
         let originRect = CGRect(x: originPoint.x - originRadius,
                                 y: originPoint.y - originRadius,
@@ -317,14 +369,16 @@ class SMSimulationView: NSView {
             let gridXScreen = graphicsX(from: gridX)
             if gridXScreen > self.bounds.maxX { break }
             
-            let label = displayableString(for: gridX) as NSString
-            let labelSize = label.sizeWithAttributes([:])
-            let range = self.bounds.minY ... self.bounds.maxY - labelSize.height - 2
-            let labelOrigin = CGPoint(x: gridXScreen + 6,
-                                      y: range.clip(graphicsY(from: 0)) + 4)
-            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
+            let label = displayableString(for: gridX)
+//            let labelSize = label.sizeWithAttributes([:])
+//            let range = self.bounds.minY ... self.bounds.maxY - labelSize.height - 2
+//            let labelOrigin = CGPoint(x: gridXScreen + 6,
+//                                      y: range.clip(graphicsY(from: 0)) + 4)
+//            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
+//            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: axisColor])
             
-            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: axisColor])
+            drawLabel(label, at: CGPoint(x: gridXScreen, y: graphicsY(from: 0)))
+            
             gridX = (round(gridX / gridSpacing) + 1) * gridSpacing
         }
         
@@ -341,14 +395,19 @@ class SMSimulationView: NSView {
             let gridYScreen = graphicsY(from: gridY)
             if gridYScreen > self.bounds.maxY { break }
             
-            let label = displayableString(for: round(gridY / self.gridSpacing) * self.gridSpacing) as NSString
-            let labelSize = label.sizeWithAttributes([:])
-            let range = self.bounds.minX ... self.bounds.maxX - labelSize.width - 11
-            let labelOrigin = CGPoint(x: range.clip(graphicsX(from: 0)) + 6, y: gridYScreen + 1)
-            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
-            label.drawInRect(labelRect, withAttributes: [NSForegroundColorAttributeName: axisColor])
+            let label = displayableString(for: round(gridY / self.gridSpacing) * self.gridSpacing)
+//            let labelSize = label.sizeWithAttributes([:])
+//            let range = self.bounds.minX ... self.bounds.maxX - labelSize.width - 11
+//            let labelOrigin = CGPoint(x: range.clip(graphicsX(from: 0)) + 6, y: gridYScreen + 1)
+//            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
+//            label.drawInRect(labelRect, withAttributes: [NSForegroundColorAttributeName: axisColor])
+            
+            drawLabel(label, at: CGPoint(x: graphicsX(from: 0), y: gridYScreen))
+            
             gridY = (round(gridY / gridSpacing) + 1) * gridSpacing
         }
+        
+        drawLabel("O", at: SMVector(), using: originColor)
     }
     
     // Draws mouse-dependent elements like the cross hair and coordinate labels.
@@ -368,9 +427,8 @@ class SMSimulationView: NSView {
             vertical.lineWidth = crossHairLineWidth
             vertical.stroke()
             
-            let label = displayableString(for: simulationPoint(from: location)) as NSString
-            let labelPoint = CGPoint(x: location.x + 8, y: location.y + 4)
-            label.drawAtPoint(labelPoint, withAttributes: [NSForegroundColorAttributeName: crossHairColor])
+            let label = displayableString(for: simulationPoint(from: location))
+            drawAnnotation(label, at: location, using: crossHairColor)
         }
     }
 }

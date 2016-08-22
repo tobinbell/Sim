@@ -13,8 +13,9 @@ struct SMBody {
     }
     
     var type: Type = .Point
-    var center: SMPoint
+    var center: SMVector
     var velocity: SMVector
+    var acceleration: SMVector
     var mass: SMScalar
     var forces: [SMVector]
 }

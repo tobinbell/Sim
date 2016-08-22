@@ -6,6 +6,8 @@
 //  Copyright © 2016 Tobin Bell. All rights reserved.
 //
 
+import Foundation
+
 struct SMVector {
     var x: SMScalar
     var y: SMScalar
@@ -20,9 +22,19 @@ struct SMVector {
         self.y = y
     }
     
-    init(from a: SMPoint = SMPoint(), to b: SMPoint) {
+    init(from a: SMVector = SMVector(), to b: SMVector) {
         self.x = b.x - a.x
         self.y = b.y - a.y
+    }
+    
+    // Computed property. Returns the magnitude of a vector.
+    var magnitude: SMScalar {
+        return sqrt(x * x + y * y)
+    }
+    
+    var unit: SMVector {
+        let mag = magnitude
+        return SMVector(x / mag, y / mag)
     }
 }
 

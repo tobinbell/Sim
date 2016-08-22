@@ -19,18 +19,18 @@ class SMWindowController: NSWindowController {
     }
     
     @IBAction func toggleSimulationPressed(sender: NSButton) {
-        self.simulation?.toggleSimulationPressed(sender)
+        //self.simulation?.toggleSimulationPressed(sender)
     }
     
     @IBAction func zoomPressed(sender: NSSegmentedControl) {
-        switch sender.selectedSegment {
-            case 0:
-                self.simulation?.zoomOutPressed(sender, segment: 0)
-            case 2:
-                self.simulation?.zoomInPressed(sender, segment: 2)
-            default:
-                self.simulation?.zoomToFitPressed(sender, segment: 1)
-        }
+//        switch sender.selectedSegment {
+//            case 0:
+//                //self.simulation?.zoomOutPressed(sender, segment: 0)
+//            case 2:
+//                //self.simulation?.zoomInPressed(sender, segment: 2)
+//            default:
+//                //self.simulation?.zoomToFitPressed(sender, segment: 1)
+//        }
     }
     
 }
