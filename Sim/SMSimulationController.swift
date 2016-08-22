@@ -14,7 +14,7 @@ class SMSimulationController: NSViewController {
         super.viewDidAppear()
         
         if let windowController = self.view.window?.windowController as? SMWindowController,
-            simulation = self.view as? SMSimulation {
+            simulation = self.view as? SMSimulationView {
             windowController.simulation = simulation
         }
     }

@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		023F26DF1D6A794400185674 /* SMSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023F26DE1D6A794400185674 /* SMSimulation.swift */; };
+		023F26E11D6A7B4A00185674 /* SMForce.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023F26E01D6A7B4A00185674 /* SMForce.swift */; };
 		026CC1AD1D68B73700561D99 /* IntervalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 026CC1AC1D68B73700561D99 /* IntervalType.swift */; };
 		0271EED91D6692A50026523C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EED81D6692A50026523C /* AppDelegate.swift */; };
 		0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEDA1D6692A50026523C /* SMSimulationController.swift */; };
 		0271EEDD1D6692A50026523C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0271EEDC1D6692A50026523C /* Assets.xcassets */; };
 		0271EEE01D6692A50026523C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0271EEDE1D6692A50026523C /* Main.storyboard */; };
-		0271EEE81D6692C80026523C /* SMSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEE71D6692C80026523C /* SMSimulation.swift */; };
+		0271EEE81D6692C80026523C /* SMSimulationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEE71D6692C80026523C /* SMSimulationView.swift */; };
 		0271EEEA1D6694270026523C /* SMBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEE91D6694270026523C /* SMBody.swift */; };
 		0271EEEC1D6694C10026523C /* SMPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEEB1D6694C10026523C /* SMPoint.swift */; };
 		0271EEEE1D6695200026523C /* SMScalar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0271EEED1D6695200026523C /* SMScalar.swift */; };
@@ -22,6 +24,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		023F26DE1D6A794400185674 /* SMSimulation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMSimulation.swift; sourceTree = "<group>"; };
+		023F26E01D6A7B4A00185674 /* SMForce.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMForce.swift; sourceTree = "<group>"; };
 		026CC1AC1D68B73700561D99 /* IntervalType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntervalType.swift; sourceTree = "<group>"; };
 		0271EED51D6692A50026523C /* Sim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0271EED81D6692A50026523C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -29,7 +33,7 @@
 		0271EEDC1D6692A50026523C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0271EEDF1D6692A50026523C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0271EEE11D6692A50026523C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0271EEE71D6692C80026523C /* SMSimulation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMSimulation.swift; sourceTree = "<group>"; };
+		0271EEE71D6692C80026523C /* SMSimulationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMSimulationView.swift; sourceTree = "<group>"; };
 		0271EEE91D6694270026523C /* SMBody.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMBody.swift; sourceTree = "<group>"; };
 		0271EEEB1D6694C10026523C /* SMPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMPoint.swift; sourceTree = "<group>"; };
 		0271EEED1D6695200026523C /* SMScalar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMScalar.swift; sourceTree = "<group>"; };
@@ -76,13 +80,13 @@
 		0271EED71D6692A50026523C /* Sim */ = {
 			isa = PBXGroup;
 			children = (
-				026CC1AB1D68B6D900561D99 /* Extensions */,
 				0271EED81D6692A50026523C /* AppDelegate.swift */,
 				0285785A1D67D1AA009B70E1 /* SMWindowController.swift */,
 				0271EEDA1D6692A50026523C /* SMSimulationController.swift */,
-				0271EEE71D6692C80026523C /* SMSimulation.swift */,
+				0271EEE71D6692C80026523C /* SMSimulationView.swift */,
 				02FB7FDA1D68759F001D2F80 /* Models */,
 				0271EEEF1D66952B0026523C /* Geometry */,
+				026CC1AB1D68B6D900561D99 /* Extensions */,
 				0271EEDC1D6692A50026523C /* Assets.xcassets */,
 				0271EEDE1D6692A50026523C /* Main.storyboard */,
 				0271EEE11D6692A50026523C /* Info.plist */,
@@ -105,6 +109,8 @@
 			children = (
 				0271EEF61D669C880026523C /* SMCamera.swift */,
 				0271EEE91D6694270026523C /* SMBody.swift */,
+				023F26DE1D6A794400185674 /* SMSimulation.swift */,
+				023F26E01D6A7B4A00185674 /* SMForce.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -179,13 +185,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				023F26DF1D6A794400185674 /* SMSimulation.swift in Sources */,
 				026CC1AD1D68B73700561D99 /* IntervalType.swift in Sources */,
 				0271EEF11D66953C0026523C /* SMVector.swift in Sources */,
+				023F26E11D6A7B4A00185674 /* SMForce.swift in Sources */,
 				0271EEDB1D6692A50026523C /* SMSimulationController.swift in Sources */,
 				0271EEF71D669C880026523C /* SMCamera.swift in Sources */,
 				0271EED91D6692A50026523C /* AppDelegate.swift in Sources */,
 				0285785B1D67D1AA009B70E1 /* SMWindowController.swift in Sources */,
-				0271EEE81D6692C80026523C /* SMSimulation.swift in Sources */,
+				0271EEE81D6692C80026523C /* SMSimulationView.swift in Sources */,
 				0271EEEE1D6695200026523C /* SMScalar.swift in Sources */,
 				0271EEEC1D6694C10026523C /* SMPoint.swift in Sources */,
 				0271EEEA1D6694270026523C /* SMBody.swift in Sources */,

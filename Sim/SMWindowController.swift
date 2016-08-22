@@ -10,7 +10,7 @@ import Cocoa
 
 class SMWindowController: NSWindowController {
     
-    var simulation: SMSimulation?
+    var simulation: SMSimulationView?
     
     override func windowDidLoad() {
         super.windowDidLoad()
