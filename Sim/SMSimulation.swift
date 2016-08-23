@@ -59,6 +59,11 @@ class SMSimulation {
     
     private func computeForces() {
         
+        // Empty all forces from previous simulation steps.
+        for i in 0 ..< bodies.count {
+            bodies[i].forces.removeAll()
+        }
+        
         // Loop over each pair of bodies in the simulation to compute
         // the forces that they exert on each other.
         // Supported forces: gravity.
@@ -72,8 +77,8 @@ class SMSimulation {
                 let r = rv.magnitude
                 let gravitational = G * m1 * m2 / (r * r) * rv.unit
                 
-                bodies[i].forces = [gravitational]
-                bodies[j].forces = [-gravitational]
+                bodies[i].forces.append(gravitational)
+                bodies[j].forces.append(-gravitational)
             }
         }
     }
@@ -82,10 +87,7 @@ class SMSimulation {
         
         // Loop over each body and compute its net force to determine its acceleration.
         for i in 0 ..< bodies.count {
-            let net = bodies[i].forces.reduce(SMVector(), combine: { net, next in
-                return net + next
-            }) / SMScalar(bodies[i].forces.count)
-            
+            let net = bodies[i].forces.reduce(SMVector(), combine: +)
             bodies[i].acceleration = net / bodies[i].mass
         }
     }

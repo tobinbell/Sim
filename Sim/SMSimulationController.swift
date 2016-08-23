@@ -24,7 +24,7 @@ class SMSimulationController: NSViewController {
         
         simulation.bodies.append(SMBody(type: .Point, center: SMVector(10, 0), velocity: SMVector(0, 10), acceleration: SMVector(), mass: 59934072520228, forces: []))
         simulation.bodies.append(SMBody(type: .Point, center: SMVector(-10, 0), velocity: SMVector(0, -10), acceleration: SMVector(), mass: 59934072520228, forces: []))
-        simulation.bodies.append(SMBody(type: .Point, center: SMVector(15, 0), velocity: SMVector(-1, 0.3), acceleration: SMVector(), mass: 59934072520228, forces: []))
+        simulation.bodies.append(SMBody(type: .Point, center: SMVector(1e-11, -1e-11), velocity: SMVector(0, 0), acceleration: SMVector(), mass: 1, forces: []))
         simulation.start()
     }
 
