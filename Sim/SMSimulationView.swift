@@ -26,10 +26,19 @@ class SMSimulationView: NSView {
     private let crossHairLineWidth: CGFloat = 1
     
     // The simulation to be rendered.
-    var simulation = SMSimulation()
+    var simulation = SMSimulation() {
+        didSet {
+            simulation.view = self
+        }
+        willSet {
+            if simulation.view == self {
+                simulation.view = nil
+            }
+        }
+    }
     
     // A camera object, representing the view point to display.
-    var camera = SMCamera() {
+    var camera = SMCamera(zoom: 20) {
         didSet {
             // Whenever the viewpoint has changed, redraw.
             self.needsDisplay = true
@@ -219,6 +228,7 @@ class SMSimulationView: NSView {
         
         drawBackground()
         drawCoordinates()
+        drawBodies()
         drawMouse()
     }
     
@@ -238,14 +248,12 @@ class SMSimulationView: NSView {
         
         let x = point.x + 8
         let y = point.y + 6
-        
         let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
-        label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
-    }
-    
-    // Label a simulation-space point with a given string.
-    private func drawLabel(text: String, at point: SMVector, using color: NSColor = .whiteColor()) {
-        drawLabel(text, at: graphicsPoint(from: point), using: color)
+        
+        // Draw the label only if it is on screen.
+        if labelRect.intersects(bounds) {
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        }
     }
     
     // Annotate a graphics-space point with a text-based annotation.
@@ -265,14 +273,76 @@ class SMSimulationView: NSView {
         if y + size.height > bounds.maxY {
             y = point.y - size.height
         }
-        
         let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
-        label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        
+        // Draw the label only if it is on screen.
+        if labelRect.intersects(bounds) {
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        }
     }
     
-    // Annotate a simulation-space point with a text-based annotation.
-    private func drawAnnotation(text: String, at point: SMVector, using color: NSColor = .whiteColor()) {
-        drawAnnotation(text, at: graphicsPoint(from: point), using: color)
+    // Draw a label at a point that clips to the bounds of the view. If the point scrolls
+    // off screen, the label will remain at the edge of the view.
+    private func drawClipping(text: String, at point: CGPoint, using color: NSColor = .whiteColor()) {
+        let label = text as NSString
+        let size = label.sizeWithAttributes([:])
+        
+        var x = point.x + 8
+        var y = point.y + 6
+        
+        // Move the label over if it is too close to either edge (right or top).
+        if x + size.width > bounds.maxX {
+            x = bounds.maxX - size.width - 8
+        }
+        if y + size.height > bounds.maxY {
+            y = bounds.maxY - size.height
+        }
+        let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        
+        // Draw the label only if it is on screen.
+        if labelRect.intersects(bounds) {
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        }
+    }
+    
+    // Draw a clipping label, but only clipping in the horizontal direction.
+    private func drawHorizontalClipping(text: String, at point: CGPoint, using color: NSColor = .whiteColor()) {
+        let label = text as NSString
+        let size = label.sizeWithAttributes([:])
+        
+        var x = point.x + 8
+        let y = point.y + 6
+        
+        // Move the label over if it is too close to either edge (right or top).
+        if x + size.width > bounds.maxX {
+            x = bounds.maxX - size.width - 8
+        }
+        let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        
+        // Draw the label only if it is on screen.
+        if labelRect.intersects(bounds) {
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        }
+    }
+    
+    // Draw a clipping label, but only clipping in the vertical direction.
+    private func drawVerticalClipping(text: String, at point: CGPoint, using color: NSColor = .whiteColor()) {
+        let label = text as NSString
+        let size = label.sizeWithAttributes([:])
+        
+        let x = point.x + 8
+        var y = point.y + 6
+        
+        // Move the label over if it is too close to either edge (right or top).
+        if y + size.height > bounds.maxY {
+            y = bounds.maxY - size.height
+        }
+        let labelRect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+        
+        // Draw the label only if it is on screen.
+        if labelRect.intersects(bounds) {
+            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: color])
+        }
     }
     
     // Draws the basic coordinate space graphics.
@@ -370,14 +440,7 @@ class SMSimulationView: NSView {
             if gridXScreen > self.bounds.maxX { break }
             
             let label = displayableString(for: gridX)
-//            let labelSize = label.sizeWithAttributes([:])
-//            let range = self.bounds.minY ... self.bounds.maxY - labelSize.height - 2
-//            let labelOrigin = CGPoint(x: gridXScreen + 6,
-//                                      y: range.clip(graphicsY(from: 0)) + 4)
-//            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
-//            label.drawWithRect(labelRect, options: [], attributes: [NSForegroundColorAttributeName: axisColor])
-            
-            drawLabel(label, at: CGPoint(x: gridXScreen, y: graphicsY(from: 0)))
+            drawVerticalClipping(label, at: CGPoint(x: gridXScreen, y: graphicsY(from: 0)))
             
             gridX = (round(gridX / gridSpacing) + 1) * gridSpacing
         }
@@ -396,18 +459,27 @@ class SMSimulationView: NSView {
             if gridYScreen > self.bounds.maxY { break }
             
             let label = displayableString(for: round(gridY / self.gridSpacing) * self.gridSpacing)
-//            let labelSize = label.sizeWithAttributes([:])
-//            let range = self.bounds.minX ... self.bounds.maxX - labelSize.width - 11
-//            let labelOrigin = CGPoint(x: range.clip(graphicsX(from: 0)) + 6, y: gridYScreen + 1)
-//            let labelRect = CGRect(origin: labelOrigin, size: labelSize)
-//            label.drawInRect(labelRect, withAttributes: [NSForegroundColorAttributeName: axisColor])
-            
-            drawLabel(label, at: CGPoint(x: graphicsX(from: 0), y: gridYScreen))
+            drawHorizontalClipping(label, at: CGPoint(x: graphicsX(from: 0), y: gridYScreen))
             
             gridY = (round(gridY / gridSpacing) + 1) * gridSpacing
         }
         
-        drawLabel("O", at: SMVector(), using: originColor)
+        drawLabel("O", at: graphicsPoint(from: SMVector()), using: originColor)
+    }
+    
+    // Draw the simulation bodies.
+    private func drawBodies() {
+        
+        NSColor.yellowColor().setFill()
+        
+        for body in simulation.bodies {
+            let center = graphicsPoint(from: body.center)
+            let rect = CGRect(x: center.x - 3, y: center.y - 3, width: 6, height: 6)
+            if rect.intersects(self.bounds) {
+                let path = NSBezierPath(ovalInRect: rect)
+                path.fill()
+            }
+        }
     }
     
     // Draws mouse-dependent elements like the cross hair and coordinate labels.

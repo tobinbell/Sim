@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class SMSimulationController: NSViewController, SMSimulationDelegate {
+class SMSimulationController: NSViewController {
     
     // The simulation model.
     let simulation = SMSimulation()
@@ -16,20 +16,16 @@ class SMSimulationController: NSViewController, SMSimulationDelegate {
     
     override func viewDidLoad() {
         simulationView = view as? SMSimulationView
-        simulation.delegate = self
-    }
-    
-    func updatedBodies(for simulation: SMSimulation) {
-        simulationView.needsDisplay = true
+        simulationView.simulation = simulation
     }
     
     override func viewDidAppear() {
         super.viewDidAppear()
         
-        if let windowController = self.view.window?.windowController as? SMWindowController,
-            simulation = self.view as? SMSimulationView {
-            windowController.simulation = simulation
-        }
+        simulation.bodies.append(SMBody(type: .Point, center: SMVector(10, 0), velocity: SMVector(0, 10), acceleration: SMVector(), mass: 59934072520228, forces: []))
+        simulation.bodies.append(SMBody(type: .Point, center: SMVector(-10, 0), velocity: SMVector(0, -10), acceleration: SMVector(), mass: 59934072520228, forces: []))
+        simulation.bodies.append(SMBody(type: .Point, center: SMVector(15, 0), velocity: SMVector(-1, 0.3), acceleration: SMVector(), mass: 59934072520228, forces: []))
+        simulation.start()
     }
 
 }

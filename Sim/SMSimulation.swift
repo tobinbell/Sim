@@ -10,25 +10,31 @@ import Foundation
 
 class SMSimulation {
     
-    let period = 0.1
-    
-    weak var delegate: SMSimulationDelegate?
-    var bodies = [SMBody]()
-    private var timer = NSTimer()
-    
     // Universal constants.
     let G: SMScalar = 6.674e-11
     
+    weak var view: SMSimulationView?
+    var bodies = [SMBody]()
+    var isRunning = false
+    
     func start() {
-        timer = NSTimer(timeInterval: period, target: self, selector: #selector(timerFired), userInfo: nil, repeats: true)
+        isRunning = true
+        
+        let qos = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qos, 0)
+        dispatch_async(backgroundQueue) {
+            var previous = NSDate()
+            while self.isRunning {
+                let now = NSDate()
+                let interval = now.timeIntervalSinceDate(previous)
+                self.progress(by: interval)
+                previous = now
+            }
+        }
     }
     
     func stop() {
-        timer.invalidate()
-    }
-    
-    @objc func timerFired() {
-        progress(by: period)
+        isRunning = false
     }
     
     private func progress(by time: SMScalar) {
@@ -39,11 +45,12 @@ class SMSimulation {
             let acceleration = bodies[i].acceleration
             let velocity = bodies[i].velocity
             let center = bodies[i].center
-            bodies[i].velocity = velocity + acceleration * time
             bodies[i].center = center + velocity * time
+            bodies[i].velocity = velocity + acceleration * time
         }
         
-        delegate?.updatedBodies(for: self)
+        //delegate?.updatedBodies(for: self)
+        view?.needsDisplay = true
         
         // Now that our position has changed, update force and acceleration calculations.
         computeForces()
@@ -63,7 +70,7 @@ class SMSimulation {
                 let m2 = bodies[j].mass
                 let rv = SMVector(from: bodies[i].center, to: bodies[j].center)
                 let r = rv.magnitude
-                let gravitational = G * m1 * m2 / (r * r) * rv
+                let gravitational = G * m1 * m2 / (r * r) * rv.unit
                 
                 bodies[i].forces = [gravitational]
                 bodies[j].forces = [-gravitational]
@@ -75,16 +82,15 @@ class SMSimulation {
         
         // Loop over each body and compute its net force to determine its acceleration.
         for i in 0 ..< bodies.count {
-            let forcesCount = SMScalar(bodies[i].forces.count)
             let net = bodies[i].forces.reduce(SMVector(), combine: { net, next in
-                return net + next / forcesCount
-            })
+                return net + next
+            }) / SMScalar(bodies[i].forces.count)
             
             bodies[i].acceleration = net / bodies[i].mass
         }
     }
 }
 
-protocol SMSimulationDelegate: class {
-    func updatedBodies(for simulation: SMSimulation)
-}
+//protocol SMSimulationDelegate: class {
+//    func updatedBodies(for simulation: SMSimulation)
+//}
